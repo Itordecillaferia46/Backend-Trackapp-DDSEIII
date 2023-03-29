@@ -12,9 +12,12 @@ const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 
 
 
+
 app.use(cors());
 
 app.use(bodyParser.json());
+
+
 
 
 /* autenticación */
@@ -424,9 +427,31 @@ exports.app = app;
 //////// Aqui queda lo de micro clase //////////
 ///////////////////////////////////////////////
 app.post("/microClase", function(req, res) {
+    console.log('Estoy enviando un archivo');
     const micro = req.body;
     Controller.setMicroClase(micro, res);
 })
 
 ///////// hasta aqui esta micro calse ////////
 /////////////////////////////////////////////
+
+const storage = multer.diskStorage({
+    destination: function(req, h5p, cb) {
+        cb(null, 'uploads/h5puploads/')
+    },
+    filename: function(req, h5p, cb) {
+        cb(null, h5p.originalname)
+    }
+});
+
+//var upload = multer({ storage: storage });
+const cargar = multer({ dest: 'uploads/' });
+
+// Ruta para manejar la solicitud POST del archivo ZIP
+app.post("/microclase", cargar.array('files'), (req, res) => {
+    console.log('Llegó'); // Información del archivo subido
+    // Procesar el archivo ZIP
+    res.send("Archivo recibido");
+});
+
+//_____________________________________

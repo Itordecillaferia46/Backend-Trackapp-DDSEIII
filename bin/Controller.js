@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const moment = require('moment-timezone')
+const moment = require("moment-timezone");
 const People = require("../bin/models/People");
 const Course = require("../bin/models/Course");
 const Exercise = require("../bin/models/Exercise");
@@ -11,11 +11,10 @@ const ExerciseType = require("./models/ExerciseType");
 const Resource = require("./models/Resource");
 const SendExercise = require("./models/SendExercise");
 const { ObjectOwnership } = require("@aws-sdk/client-s3");
-const { ObjectId } = require('mongodb');
+const { ObjectId } = require("mongodb");
 const { json } = require("body-parser");
 
 class Controller {
-
     constructor() {
         this.connect();
     }
@@ -26,7 +25,7 @@ class Controller {
                 // "mongodb+srv://acorderofalco58:TEACHdev2021.@cluster0.3okjxa2.mongodb.net/trackapp?retryWrites=true&w=majority",
                 "mongodb://acorderofalco58:TEACHdev2021.@ac-wq3ku25-shard-00-00.3okjxa2.mongodb.net:27017,ac-wq3ku25-shard-00-01.3okjxa2.mongodb.net:27017,ac-wq3ku25-shard-00-02.3okjxa2.mongodb.net:27017/trackapp?ssl=true&replicaSet=atlas-twthjd-shard-0&authSource=admin&retryWrites=true&w=majority", { useNewUrlParser: true }
             );
-            console.log('conectado');
+            console.log("conectado");
         } catch (e) {
             console.error(e);
         }
@@ -38,12 +37,12 @@ class Controller {
 
             await People.findOne({ username })
                 /*  .populate({
-                      path: "asignatures",
-                      populate: { path: "_id_asignatura", model: "Area" },
-                      populate: { path: "Actividades", populate: { path: "_id_actividad", model: "Exercise" } }
-                  })*/
-                .then(async people => {
-                    console.log(people)
+                                path: "asignatures",
+                                populate: { path: "_id_asignatura", model: "Area" },
+                                populate: { path: "Actividades", populate: { path: "_id_actividad", model: "Exercise" } }
+                            })*/
+                .then(async(people) => {
+                    console.log(people);
 
                     if (!people) {
                         res.status(500).send("Usuario invalido");
@@ -51,36 +50,31 @@ class Controller {
                         if (password == people.password) {
                             var r = 0;
                             var asign = [];
-                            const date = await this.getActividadEstudent(people._id)
-
+                            const date = await this.getActividadEstudent(people._id);
 
                             for (let k of date.asignatures) {
-                                var v = k.Actividades.filter((ele) => { return ele._id_state == "1" })
+                                var v = k.Actividades.filter((ele) => {
+                                    return ele._id_state == "1";
+                                });
 
                                 var obj = JSON.parse(JSON.stringify(date.asignatures[r]));
 
-                                obj.activa = v.length
-                                asign.push(obj)
+                                obj.activa = v.length;
+                                asign.push(obj);
                                 r += 1;
                             }
                             var final = JSON.parse(JSON.stringify(date));
-                            final.asignatures = asign
+                            final.asignatures = asign;
                             res.status(200).send(final);
-
-
-
-                        } else
-                            res.status(500).send("Usuario invalido");
+                        } else res.status(500).send("Usuario invalido");
                     }
-
                 })
-                .catch(error => {
-                    console.log(error)
-                    res.status(500).send(error)
+                .catch((error) => {
+                    console.log(error);
+                    res.status(500).send(error);
                 });
         }
         /* autenticación */
-
 
     /* area */
     setArea(area, res) {
@@ -94,16 +88,23 @@ class Controller {
         Area.find({}, function(err, area) {
             if (err) throw err;
             res.send(area);
-        })
+        });
     }
 
     updateArea(area, res) {
         let { id, name, code, teacher_id, course_id } = area;
-        Area.updateOne({ _id: id }, { $set: { name: name, code: code, teacher_id: teacher_id, course_id: course_id } })
-            .then(rawResponse => {
-                res.send({ message: "Area update", raw: rawResponse })
+        Area.updateOne({ _id: id }, {
+                $set: {
+                    name: name,
+                    code: code,
+                    teacher_id: teacher_id,
+                    course_id: course_id,
+                },
             })
-            .catch(err => {
+            .then((rawResponse) => {
+                res.send({ message: "Area update", raw: rawResponse });
+            })
+            .catch((err) => {
                 if (err) throw err;
             });
     }
@@ -112,7 +113,7 @@ class Controller {
             Area.deleteOne({ _id: id }, function(err) {
                 if (err) throw err;
                 res.send({ message: "Area has been deleted" });
-            })
+            });
         }
         /* area */
 
@@ -123,7 +124,6 @@ class Controller {
             res.send({ status: 200, nU: newPeople });
         });
     }
-
 
     getPeoples(res) {
         People.find({}, (err, peoples) => {
@@ -137,29 +137,36 @@ class Controller {
             .populate({
                 path: "asignatures",
                 populate: { path: "_id_asignatura", model: "Area" },
-                populate: { path: "Actividades", populate: { path: "_id_actividad", model: "Exercise" } }
+                populate: {
+                    path: "Actividades",
+                    populate: { path: "_id_actividad", model: "Exercise" },
+                },
             })
-            .then(people => {
-
+            .then((people) => {
                 if (!people) {
                     res.status(500).send("Usuario invalido");
                 } else {
-
                     res.send({ People: people });
                 }
-
-            })
-
-
+            });
     }
 
     updatePeople(people, res) {
         let { id, name, last_name, gender, rol, username, password } = people;
-        People.updateOne({ _id: id }, { $set: { name: name, last_name: last_name, gender: gender, rol: rol, username: username, password: password } })
-            .then(rawResponse => {
-                res.send({ message: "People updated", raw: rawResponse })
+        People.updateOne({ _id: id }, {
+                $set: {
+                    name: name,
+                    last_name: last_name,
+                    gender: gender,
+                    rol: rol,
+                    username: username,
+                    password: password,
+                },
             })
-            .catch(err => {
+            .then((rawResponse) => {
+                res.send({ message: "People updated", raw: rawResponse });
+            })
+            .catch((err) => {
                 if (err) throw err;
             });
     }
@@ -171,7 +178,6 @@ class Controller {
             });
         }
         /* people */
-
 
     /*------------------------------------CRUD ROL------------------------------------*/
     setRole(role, res) {
@@ -191,10 +197,10 @@ class Controller {
     updateRole(role, res) {
         const { id, name } = role;
         Role.updateOne({ _id: id }, { $set: { name: name } })
-            .then(rawResponse => {
-                res.send({ message: "Role updated", raw: rawResponse })
+            .then((rawResponse) => {
+                res.send({ message: "Role updated", raw: rawResponse });
             })
-            .catch(err => {
+            .catch((err) => {
                 if (err) throw err;
             });
     }
@@ -204,7 +210,7 @@ class Controller {
             if (err) throw err;
             res.send({ message: "Role has been deleted" });
         });
-    };
+    }
 
     /*------------------------------------CRUD ROL------------------------------------*/
 
@@ -217,13 +223,12 @@ class Controller {
         });
     }
 
-
     //READ
     getCourses(res) {
         Course.find({}, (err, courses) => {
             if (err) throw err;
             res.send(courses);
-        })
+        });
     }
 
     getCourse(id, res) {
@@ -237,10 +242,10 @@ class Controller {
     updateCourse(course, res) {
         let { id, grade, group, nomenclature } = course;
         Course.updateOne({ _id: id }, { $set: { grade: grade, group: group, nomenclature: nomenclature } })
-            .then(rawResponse => {
-                res.send({ message: "Course updated", raw: rawResponse })
+            .then((rawResponse) => {
+                res.send({ message: "Course updated", raw: rawResponse });
             })
-            .catch(err => {
+            .catch((err) => {
                 if (err) throw err;
             });
     }
@@ -257,19 +262,20 @@ class Controller {
     /*------------------------------------CRUD EXERCISE------------------------------------*/
     //CREATE
     async setExerciseEstudiante(exercise, res) {
-        const { id_actividad, people_id, archivo, id_asignatura, dia, curso } = exercise;
+        const { id_actividad, people_id, archivo, id_asignatura, dia, curso } =
+        exercise;
 
-        var actua = null
+        var actua = null;
 
         var object = {
             people_id: people_id,
             archivo: archivo,
             nota: {
                 calificacion: 0,
-                observacion: ''
-            }
-        }
-        object = JSON.parse(JSON.stringify(object))
+                observacion: "",
+            },
+        };
+        object = JSON.parse(JSON.stringify(object));
 
         //var actua = await Exercise.findByIdAndUpdate({ _id: id_actividad },
         //   { $set: { 'enviados.$[stor]': object } },
@@ -278,118 +284,108 @@ class Controller {
         actua = await Exercise.findByIdAndUpdate({ _id: id_actividad }, { $set: { "enviados.$[perf].trabajos.$[est]": object } }, {
             arrayFilters: [
                 { "perf.curso": { $eq: curso } },
-                { "est.people_id": { $eq: people_id } }
-            ]
-        })
+                { "est.people_id": { $eq: people_id } },
+            ],
+        });
 
-
-        var result = null
-        var r1 = actua.enviados.filter((e) => { return e.curso == curso });
-        console.log("r1111111111" + JSON.stringify(r1))
+        var result = null;
+        var r1 = actua.enviados.filter((e) => {
+            return e.curso == curso;
+        });
+        console.log("r1111111111" + JSON.stringify(r1));
         if (r1.length > 0) {
             var tr = r1[0].trabajos;
             for (var data of tr) {
                 if (data.people_id == people_id) {
-                    console.log("encontradddddddooooo9")
-                    result = data
-
+                    console.log("encontradddddddooooo9");
+                    result = data;
                 }
-
             }
         }
-
 
         if (r1.length == 0) {
             var estr = {
                 curso: curso,
-                trabajos: []
-            }
-            estr.trabajos.push(object)
-            actua = await Exercise.findByIdAndUpdate({ _id: id_actividad }, { $push: { "enviados": estr } })
-
-
+                trabajos: [],
+            };
+            estr.trabajos.push(object);
+            actua = await Exercise.findByIdAndUpdate({ _id: id_actividad }, { $push: { enviados: estr } });
         } else {
-            console.log("llego aca")
+            console.log("llego aca");
 
-            actua = await Exercise.updateOne({ _id: id_actividad, 'enviados.curso': curso }, { $push: { 'enviados.$.trabajos': object } }, )
+            actua = await Exercise.updateOne({ _id: id_actividad, "enviados.curso": curso }, { $push: { "enviados.$.trabajos": object } });
         }
 
         /*  actua = await Exercise.findByIdAndUpdate({ _id: id_actividad }, { $push: { "enviados.$[perf].trabajos": object } },
-           {
-           arrayFilters: [
-               { "perf.curso": { $eq: curso } },
-               
-           ]
-        })*/
+               {
+               arrayFilters: [
+                   { "perf.curso": { $eq: curso } },
+                   
+               ]
+            })*/
 
         //  }
 
-
         // actua = await Exercise.findByIdAndUpdate({ _id: id_actividad }, { $push: { 'enviados': object } })
-
 
         // }
 
         /*
-        var pq = {
-            _id_actividad: id_actividad,
-            _id_state: 2,
-            dia: {
-                dias: dia.dias,
-                color: 'green',
-                avan: dia.avan
+            var pq = {
+                _id_actividad: id_actividad,
+                _id_state: 2,
+                dia: {
+                    dias: dia.dias,
+                    color: 'green',
+                    avan: dia.avan
+                }
             }
-        }
 
 
-        console.log('alumno :' + people_id)
-        console.log('asignatura :' + id_asignatura)
-        console.log('actividad :' + id_actividad)
-          
-        var p = await People.findByIdAndUpdate({ _id: people_id }, { $set: { "asignatures.$[perf].Actividades.$[est]": pq } }, {
-            arrayFilters: [
-                { "perf._id": { $eq: id_asignatura } },
-                { "est._id_actividad": { $eq: id_actividad } }
-            ]
-        })
+            console.log('alumno :' + people_id)
+            console.log('asignatura :' + id_asignatura)
+            console.log('actividad :' + id_actividad)
+              
+            var p = await People.findByIdAndUpdate({ _id: people_id }, { $set: { "asignatures.$[perf].Actividades.$[est]": pq } }, {
+                arrayFilters: [
+                    { "perf._id": { $eq: id_asignatura } },
+                    { "est._id_actividad": { $eq: id_actividad } }
+                ]
+            })
 
-       */
-
+           */
 
         res.send({ status: 200, nU: actua });
-
     }
 
-
-
-
-
-
     async setExercise(exercise, res) {
-        var vm = this
+        var vm = this;
         var dec = moment.utc();
         //  var dec = moment()
-        var fecha = dec.tz('America/Bogota').format('YYYY-MM-DD HH:mm:ss');
-        let hora = dec.tz('America/Bogota').format('HH:mm:ss');
-        console.log('hora :' + hora)
+        var fecha = dec.tz("America/Bogota").format("YYYY-MM-DD HH:mm:ss");
+        let hora = dec.tz("America/Bogota").format("HH:mm:ss");
+        console.log("hora :" + hora);
 
-
-        var myDate = moment(exercise.deliveryDateInicial, 'YYYY-MM-DD HH:mm:ss').toDate();
-        myDate = moment(myDate).add(hora, 'HH:mm:ss');
+        var myDate = moment(
+            exercise.deliveryDateInicial,
+            "YYYY-MM-DD HH:mm:ss"
+        ).toDate();
+        myDate = moment(myDate).add(hora, "HH:mm:ss");
         myDate = moment.utc(myDate).tz("America/Bogota");
         exercise.deliveryDateInicial = myDate;
 
-
-        var final = moment(exercise.deliveryDateFinal, 'YYYY-MM-DD HH:mm:ss').toDate();
-        final = moment(final).add('18:59:00', 'HH:mm:ss');
+        var final = moment(
+            exercise.deliveryDateFinal,
+            "YYYY-MM-DD HH:mm:ss"
+        ).toDate();
+        final = moment(final).add("18:59:00", "HH:mm:ss");
         final = moment.utc(final).tz("America/Bogota");
-        exercise.deliveryDateFinal = final
-
+        exercise.deliveryDateFinal = final;
 
         await Exercise.create(exercise, function(err, newActivi) {
             if (err) throw err;
 
-            console.log(newActivi)
+            console.log(newActivi);
             vm.setActividadGrades(newActivi);
 
             res.send({ status: 200, nU: newActivi });
@@ -405,7 +401,6 @@ class Controller {
         });
     }
 
-
     getExercise(id, res) {
         Exercise.find({ _id: id }, (err, exercise) => {
             if (err) throw err;
@@ -415,42 +410,50 @@ class Controller {
 
     async getExerciseDocente(id, res) {
         await Exercise.find({ people_id: id })
-            .populate('task_asignature')
-            .populate('topic')
+            .populate("task_asignature")
+            .populate("topic")
             .populate({
                 path: "enviados",
                 populate: {
                     path: "trabajos",
-                    populate: { path: "people_id", model: "People" }
-                }
+                    populate: { path: "people_id", model: "People" },
+                },
             })
-            .then(async exercise => {
+            .then(async(exercise) => {
                 res.send({ exercise });
-            })
+            });
     }
 
     async setCalificacionExcersice(paq, res) {
-            console.log("paquete" + JSON.stringify(paq))
-            const { id_actividad, curso, trabajos } = paq
+            console.log("paquete" + JSON.stringify(paq));
+            const { id_actividad, curso, trabajos } = paq;
             var actua = await Exercise.findByIdAndUpdate({ _id: id_actividad }, { $set: { "enviados.$[perf].trabajos": trabajos } }, {
-                arrayFilters: [
-                    { "perf.curso": { $eq: curso } },
-                ]
-            })
+                arrayFilters: [{ "perf.curso": { $eq: curso } }],
+            });
             res.send({ actua });
-
         }
         /*
-                Exercise.find({ people_id: id }, (err, exercise) => {
-                    if (err) throw err;
-                    res.send({  exercise });
-                });
-            }
-        */
+                      Exercise.find({ people_id: id }, (err, exercise) => {
+                          if (err) throw err;
+                          res.send({  exercise });
+                      });
+                  }
+              */
 
     //UPDATE
     updateExercise(exercise, res) {
-        let { id, task_asignature, topic, task_type, task_title, task_description, task_status, deliveryDateInicial, deliveryDateFinal, people_id } = exercise;
+        let {
+            id,
+            task_asignature,
+            topic,
+            task_type,
+            task_title,
+            task_description,
+            task_status,
+            deliveryDateInicial,
+            deliveryDateFinal,
+            people_id,
+        } = exercise;
         Exercise.updateOne({ _id: id }, {
                 $set: {
                     task_asignature: task_asignature,
@@ -461,17 +464,16 @@ class Controller {
                     deliveryDateInicial: deliveryDateInicial,
                     deliveryDateFinal: deliveryDateFinal,
                     task_status: task_status,
-                    people_id: people_id
-                }
+                    people_id: people_id,
+                },
             })
-            .then(rawResponse => {
-                res.send({ message: "Exercise updated", raw: rawResponse })
+            .then((rawResponse) => {
+                res.send({ message: "Exercise updated", raw: rawResponse });
             })
-            .catch(err => {
+            .catch((err) => {
                 if (err) throw err;
             });
     }
-
 
     //DELETE
     deleteExercise(id, res) {
@@ -510,14 +512,13 @@ class Controller {
     updateArea(area, res) {
         let { id, name, creation_date } = area;
         Area.updateOne({ _id: id }, { $set: { name: name, creation_date: creation_date } })
-            .then(rawResponse => {
-                res.send({ message: "Area updated", raw: rawResponse })
+            .then((rawResponse) => {
+                res.send({ message: "Area updated", raw: rawResponse });
             })
-            .catch(err => {
+            .catch((err) => {
                 if (err) throw err;
             });
     }
-
 
     //DELETE
     deleteArea(id, res) {
@@ -555,15 +556,23 @@ class Controller {
     //UPDATE
     updateSchool(school, res) {
         let { id, name, nit, courses, contact, grade, direction } = school;
-        School.updateOne({ _id: id }, { $set: { name: name, nit: nit, courses: courses, contact: contact, grade: grade, direction: direction } })
-            .then(rawResponse => {
-                res.send({ message: "Period updated", raw: rawResponse })
+        School.updateOne({ _id: id }, {
+                $set: {
+                    name: name,
+                    nit: nit,
+                    courses: courses,
+                    contact: contact,
+                    grade: grade,
+                    direction: direction,
+                },
             })
-            .catch(err => {
+            .then((rawResponse) => {
+                res.send({ message: "Period updated", raw: rawResponse });
+            })
+            .catch((err) => {
                 if (err) throw err;
             });
     }
-
 
     //DELETE
     deleteSchool(id, res) {
@@ -602,14 +611,13 @@ class Controller {
     updateExerciseType(exerciseType, res) {
         let { id, topic, subtopic } = exerciseType;
         ExerciseType.updateOne({ _id: id }, { $set: { topic: topic, subtopic: subtopic } })
-            .then(rawResponse => {
-                res.send({ message: "Exercise type updated", raw: rawResponse })
+            .then((rawResponse) => {
+                res.send({ message: "Exercise type updated", raw: rawResponse });
             })
-            .catch(err => {
+            .catch((err) => {
                 if (err) throw err;
             });
     }
-
 
     //DELETE
     deleteExerciseType(id, res) {
@@ -648,14 +656,13 @@ class Controller {
     updateExerciseType(exerciseType, res) {
         let { id, topic, subtopic } = exerciseType;
         ExerciseType.updateOne({ _id: id }, { $set: { topic: topic, subtopic: subtopic } })
-            .then(rawResponse => {
-                res.send({ message: "Exercise type updated", raw: rawResponse })
+            .then((rawResponse) => {
+                res.send({ message: "Exercise type updated", raw: rawResponse });
             })
-            .catch(err => {
+            .catch((err) => {
                 if (err) throw err;
             });
     }
-
 
     //DELETE
     deleteExerciseType(id, res) {
@@ -693,15 +700,21 @@ class Controller {
     //UPDATE
     updateResource(resource, res) {
         let { id, title, name, resource_type, people_id } = resource;
-        Resource.updateOne({ _id: id }, { $set: { title: title, name: name, resource_type: resource_type, people_id: people_id } })
-            .then(rawResponse => {
-                res.send({ message: "Resource type updated", raw: rawResponse })
+        Resource.updateOne({ _id: id }, {
+                $set: {
+                    title: title,
+                    name: name,
+                    resource_type: resource_type,
+                    people_id: people_id,
+                },
             })
-            .catch(err => {
+            .then((rawResponse) => {
+                res.send({ message: "Resource type updated", raw: rawResponse });
+            })
+            .catch((err) => {
                 if (err) throw err;
             });
     }
-
 
     //DELETE
     deleteResource(id, res) {
@@ -739,15 +752,21 @@ class Controller {
     //UPDATE
     updateSendExercise(sendExercise, res) {
         let { id, archive, people_id, exercise_id, note } = sendExercise;
-        SendExercise.updateOne({ _id: id }, { $set: { archive: archive, note: note, exercise_id: exercise_id, people_id: people_id } })
-            .then(rawResponse => {
-                res.send({ message: "Exercise send type updated", raw: rawResponse })
+        SendExercise.updateOne({ _id: id }, {
+                $set: {
+                    archive: archive,
+                    note: note,
+                    exercise_id: exercise_id,
+                    people_id: people_id,
+                },
             })
-            .catch(err => {
+            .then((rawResponse) => {
+                res.send({ message: "Exercise send type updated", raw: rawResponse });
+            })
+            .catch((err) => {
                 if (err) throw err;
             });
     }
-
 
     //DELETE
     deleteSendExercise(id, res) {
@@ -761,66 +780,71 @@ class Controller {
     /*------------------------ESTUDENT GRADOS ----*/
 
     prueba(id, res) {
-        var vm = this
+        var vm = this;
         var obj = {
             state: 0,
-            dias: -1
-        }
+            dias: -1,
+        };
 
         Exercise.findOne({ _id: id }, (err, actividad) => {
             if (err) throw err;
             dec = moment.utc();
             var dec = moment();
-            var fecha = dec.tz('America/Bogota').format('YYYY-MM-DD HH:mm:ss');
-            var fec_actual = moment(fecha, 'YYYY-MM-DD');
-            var fini = moment(actividad.deliveryDateInicial, 'YYYY-MM-DD').add(1, 'd');
-            var ffin = moment(actividad.deliveryDateFinal, 'YYYY-MM-DD').add(1, 'd');
-            var dias_activ = ffin.diff(fini, 'days');
-            var dias_trans = fec_actual.diff(fini, 'days');
+            var fecha = dec.tz("America/Bogota").format("YYYY-MM-DD HH:mm:ss");
+            var fec_actual = moment(fecha, "YYYY-MM-DD");
+            var fini = moment(actividad.deliveryDateInicial, "YYYY-MM-DD").add(
+                1,
+                "d"
+            );
+            var ffin = moment(actividad.deliveryDateFinal, "YYYY-MM-DD").add(1, "d");
+            var dias_activ = ffin.diff(fini, "days");
+            var dias_trans = fec_actual.diff(fini, "days");
 
             actividad.prueba = 5;
             if (dias_trans > dias_activ) {
-                obj.state = 3
-                obj.dias = dias_trans
+                obj.state = 3;
+                obj.dias = dias_trans;
             } else {
                 var dia_fal = dias_activ - dias_trans;
-                obj.state = 1
-                obj.dias = dia_fal
+                obj.state = 1;
+                obj.dias = dia_fal;
             }
+        });
 
-
-        })
-
-        return res = obj
-
+        return (res = obj);
     }
 
-
     async getActividadEstudent(id) {
-        const data = await People.findById(id)
-            .populate({
-                path: "asignatures",
-                populate: { path: "Actividades", populate: { path: "_id_actividad", model: "Exercise" } }
-            })
+        const data = await People.findById(id).populate({
+            path: "asignatures",
+            populate: {
+                path: "Actividades",
+                populate: { path: "_id_actividad", model: "Exercise" },
+            },
+        });
 
         for (let asignature of data.asignatures) {
-            var art = []
+            var art = [];
 
             //  var procesar = asignature.Actividades.filter((ele)=> {return ele._id_state == 1})
             for (let acti of asignature.Actividades) {
-
-                console.log(acti)
-                if ((acti._id_state == "1") || (acti._id_state == "3")) {
+                console.log(acti);
+                if (acti._id_state == "1" || acti._id_state == "3") {
                     dec = moment.utc();
                     var dec = moment();
-                    var fecha = dec.tz('America/Bogota').format('YYYY-MM-DD HH:mm:ss');
-                    var fec_actual = moment(fecha, 'YYYY-MM-DD HH:mm:ss');
-                    var fini = moment(acti._id_actividad.deliveryDateInicial, 'MMMM Do YYYY, h:mm:ss a');
-                    var ffin = moment(acti._id_actividad.deliveryDateFinal, 'MMMM Do YYYY, h:mm:ss a');
+                    var fecha = dec.tz("America/Bogota").format("YYYY-MM-DD HH:mm:ss");
+                    var fec_actual = moment(fecha, "YYYY-MM-DD HH:mm:ss");
+                    var fini = moment(
+                        acti._id_actividad.deliveryDateInicial,
+                        "MMMM Do YYYY, h:mm:ss a"
+                    );
+                    var ffin = moment(
+                        acti._id_actividad.deliveryDateFinal,
+                        "MMMM Do YYYY, h:mm:ss a"
+                    );
 
-                    var dias_activ = ffin.diff(fini, 'days');
-                    var dias_trans = ffin.diff(fec_actual, 'days')
-
+                    var dias_activ = ffin.diff(fini, "days");
+                    var dias_trans = ffin.diff(fec_actual, "days");
 
                     // 1 - pendiente
                     // 2 - enviada
@@ -829,52 +853,44 @@ class Controller {
                     // 5 - calificada
 
                     var resp = new Object();
-                    resp._id_actividad = acti._id_actividad._id,
-                        resp._id = acti._id;
+                    (resp._id_actividad = acti._id_actividad._id), (resp._id = acti._id);
                     resp.dia = new Object();
                     resp.dia.dias = 0;
                     resp.dia.avan = 0;
-                    resp.dia.color = "white"
-
+                    resp.dia.color = "white";
 
                     //     var fec_actual = moment(fecha).format('YYYY-MM-DD');
                     //   var fini = moment(acti._id_actividad.deliveryDateInicial,'YYYY-MM-DD').add(1, 'd').format('YYYY-MM-DD');
 
-
-                    if (fini > fec_actual)
-                        resp._id_state = 3
-
+                    if (fini > fec_actual) resp._id_state = 3;
                     else {
                         if (dias_trans < 1) {
-                            resp._id_state = 4
-                            resp.dia.dias = dias_activ
-                            resp.dia.avan = dias_trans
-                            resp.dia.color = "gray"
+                            resp._id_state = 4;
+                            resp.dia.dias = dias_activ;
+                            resp.dia.avan = dias_trans;
+                            resp.dia.color = "gray";
                         } else {
-
-                            resp._id_state = 1
-                            resp.dia.dias = dias_activ
-                            resp.dia.avan = dias_trans
-                            resp.dia.color = this.colorActividad(dias_trans)
-
+                            resp._id_state = 1;
+                            resp.dia.dias = dias_activ;
+                            resp.dia.avan = dias_trans;
+                            resp.dia.color = this.colorActividad(dias_trans);
                         }
                     }
 
-                    art.push(resp)
-                } else
-                    art.push(acti)
-
+                    art.push(resp);
+                } else art.push(acti);
             }
 
-            await People.findOneAndUpdate({ _id: id, 'asignatures._id': asignature._id }, { $set: { 'asignatures.$.Actividades': art } }, )
-
+            await People.findOneAndUpdate({ _id: id, "asignatures._id": asignature._id }, { $set: { "asignatures.$.Actividades": art } });
         }
 
-        const datos = await People.findById(id)
-            .populate({
-                path: "asignatures",
-                populate: { path: "Actividades", populate: { path: "_id_actividad", model: "Exercise" } }
-            })
+        const datos = await People.findById(id).populate({
+            path: "asignatures",
+            populate: {
+                path: "Actividades",
+                populate: { path: "_id_actividad", model: "Exercise" },
+            },
+        });
 
         return datos;
 
@@ -882,17 +898,13 @@ class Controller {
     }
 
     colorActividad(dias) {
-        if (dias == 1)
-            return "red"
-        else
-        if ((dias > 1) && (dias < 4))
-            return "orange"
-        else
-            return "yellow"
+        if (dias == 1) return "red";
+        else if (dias > 1 && dias < 4) return "orange";
+        else return "yellow";
     }
 
     setActividadGrades(activ) {
-        console.log("TOPICOS" + JSON.stringify(activ))
+        console.log("TOPICOS" + JSON.stringify(activ));
         for (let curso of activ.topic) {
             //People.find({ courestu: curso._id }, function(err, estudiantes) {
 
@@ -902,7 +914,6 @@ class Controller {
                 if (estudiantes.length > 0) {
                     for (let estu of estudiantes) {
                         if (estu.asignatures.length == 0) {
-
                             const obj = {
                                 _id: activ.task_asignature[0]._id,
                                 Actividades: [{
@@ -911,31 +922,25 @@ class Controller {
                                     dia: {
                                         dias: "0",
                                         color: "white",
-                                        avan: 0
-                                    }
-
-                                }]
-                            }
-                            console.log("no tine asignaturas")
+                                        avan: 0,
+                                    },
+                                }, ],
+                            };
+                            console.log("no tine asignaturas");
                             estu.asignatures.push(obj);
-
                         } else {
-
-                            console.log("tiene asignaturas")
-                            console.log(estu.asignatures)
-
+                            console.log("tiene asignaturas");
+                            console.log(estu.asignatures);
 
                             var obj = estu.asignatures.find((ele) => {
-
-                                return (JSON.stringify(ele._id._id) === JSON.stringify(activ.task_asignature[0]))
-
+                                return (
+                                    JSON.stringify(ele._id._id) ===
+                                    JSON.stringify(activ.task_asignature[0])
+                                );
                             });
 
-
-                            console.log("encotrado" + JSON.stringify(obj))
+                            console.log("encotrado" + JSON.stringify(obj));
                             if (obj != undefined) {
-
-
                                 let index = estu.asignatures.indexOf(obj);
 
                                 const acti = {
@@ -944,13 +949,12 @@ class Controller {
                                     dia: {
                                         dias: "0",
                                         color: "white",
-                                        avan: 0
-                                    }
-                                }
-                                console.log('sobrescrito')
+                                        avan: 0,
+                                    },
+                                };
+                                console.log("sobrescrito");
                                 estu.asignatures[index].Actividades.push(acti);
                             } else {
-
                                 const obj = {
                                     _id: activ.task_asignature[0]._id._id,
                                     Actividades: [{
@@ -959,31 +963,24 @@ class Controller {
                                         dia: {
                                             dias: "0",
                                             color: "white",
-                                            avan: 0
-                                        }
-                                    }]
-
-                                }
-                                console.log('nuevo')
+                                            avan: 0,
+                                        },
+                                    }, ],
+                                };
+                                console.log("nuevo");
                                 estu.asignatures.push(obj);
                             }
-
                         }
 
-                        People.updateOne({ _id: estu._id }, { $set: { asignatures: estu.asignatures } })
-                            .then(rawResponse => {
-                                console.log("actualizado")
-                            })
+                        People.updateOne({ _id: estu._id }, { $set: { asignatures: estu.asignatures } }).then((rawResponse) => {
+                            console.log("actualizado");
+                        });
                     }
                 }
-
-            })
-
+            });
         }
 
-        return (activ)
-
-
+        return activ;
     }
 
     /*------------------------ESTUDENT GRADOS ----*/
@@ -995,17 +992,14 @@ class Controller {
                 if (ejer[i].enviados.length > 0) {
                     for (let j = 0; j < ejer[i].enviados.length; j++) {
                         if (ejer[i].enviados[j].people_id.courestu._id == id) {
-                            personas.push(ejer[i].enviados[j])
+                            personas.push(ejer[i].enviados[j]);
                         }
                     }
-
                 }
-
             }
             res.send(personas);
         });
     }
-
 
     //////// Aqui queda lo de micro clase //////////
     ///////////////////////////////////////////////
@@ -1018,5 +1012,6 @@ class Controller {
         ///////// hasta aqui esta micro calse ////////
         /////////////////////////////////////////////
 }
+//___________________Codigo nuevo: Dev Isaac Tordecilla Feria_____________
 
-exports.Controller = new Controller;
+exports.Controller = new Controller();
